@@ -11,11 +11,15 @@ class ServiceNowClient(RequestLogger, requests.Session):
     """ServiceNow REST client for looking up records."""
     api = '/api/now/table'
     table_map = {
+        'ADVISORY': 'u_outage_communication',
         'CHG': 'change_request',
         'CTASK': 'change_task',
+        'DMND': 'dmn_demand',
+        'IDEA': 'idea',
         'INC': 'incident',
         'ITASK': 'u_incident_task',
         'PRB': 'problem',
+        'PRJ': 'pm_project',
         'PTASK': 'problem_task',
         'REQ': 'u_simple_requests',
         'RTASK': 'u_request_task'
