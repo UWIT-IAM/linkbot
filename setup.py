@@ -6,7 +6,7 @@ install_requires = ['beautifulsoup4',
                     'slackclient',
                     'requests',
                     'Flask',
-                    'gunicorn[eventlet]']
+                    'gunicorn[eventlet]<=19.9.0']
 
 tests_require = ['pytest', 'pytest-flake8']
 
