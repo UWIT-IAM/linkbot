@@ -3,6 +3,7 @@ import logconfig  # noqa F401
 from flask import Flask, request, jsonify, abort
 import slack
 import os
+import re                                   # KRLxxx
 import time
 import hmac
 import hashlib
@@ -98,6 +99,9 @@ def process_event(event):
     if 'thread_ts' in event:
         post_args['thread_ts'] = event['thread_ts']
 
+    m = re.search(r'krl_test', text)                            # KRLxxx
+    if m:                                                       # KRLxxx
+        app.logger.info(f'Processing event: "{event}"')         # KRLxxx
     app.logger.debug(f'processing message from event: {description}')
     for message in links_from_text(text):
         SLACK_CLIENT.chat_postMessage(text=message, **post_args)
@@ -112,6 +116,9 @@ def process_command(command):
         app.logger.error(f'tossing supposed command: {command_keys}')
         return
 
+    m = re.search(r'krl_test', text)                            # KRLxxx
+    if m:                                                       # KRLxxx
+        app.logger.info(f'Processing command: "{command}"')     # KRLxxx
     text = '\n'.join(links_from_text(text))
     if text:
         data = dict(text=text, response_type='in_channel')

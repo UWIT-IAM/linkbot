@@ -67,7 +67,7 @@ class JiraLinkBot(LinkBot):
     """Subclass LinkBot to customize response for JIRA links
 
     """
-    default_match = r'[A-Z]{3,}\-[0-9]+'
+    default_match = r'[A-Z]{2,}\-[0-9]+'
 
     def __init__(self, conf):
         if 'LINK' not in conf:
