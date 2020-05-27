@@ -3,7 +3,6 @@ import logconfig  # noqa F401
 from flask import Flask, request, jsonify, abort
 import slack
 import os
-import re                                   # KRLxxx
 import time
 import hmac
 import hashlib
@@ -23,7 +22,9 @@ if not LINKBOTS:
     raise Exception('no linkbots defined')
 SLACK_CLIENT = slack.WebClient(app.config['SLACK_BOT_TOKEN'])
 WEBHOOK_CLIENT = RequestLogger()
+DUPLICATION_DELAY = app.config.get('DUPLICATION_DELAY', 2 * 60 * 60)
 
+doneThat = {}
 
 @app.route('/', methods=['GET', 'POST'])
 def handle_message():
@@ -95,15 +96,13 @@ def process_event(event):
         app.logger.info(f'Event discarded: {description}')
         return
     text = event['text']
-    post_args = {'channel': event['channel']}
+    channel = event['channel']
+    post_args = {'channel': channel}
     if 'thread_ts' in event:
         post_args['thread_ts'] = event['thread_ts']
 
-    m = re.search(r'krl_test', text)                            # KRLxxx
-    if m:                                                       # KRLxxx
-        app.logger.info(f'Processing event: "{event}"')         # KRLxxx
     app.logger.debug(f'processing message from event: {description}')
-    for message in links_from_text(text):
+    for message in links_from_text(text, channel):
         SLACK_CLIENT.chat_postMessage(text=message, **post_args)
 
 
@@ -116,19 +115,27 @@ def process_command(command):
         app.logger.error(f'tossing supposed command: {command_keys}')
         return
 
-    m = re.search(r'krl_test', text)                            # KRLxxx
-    if m:                                                       # KRLxxx
-        app.logger.info(f'Processing command: "{command}"')     # KRLxxx
-    text = '\n'.join(links_from_text(text))
+    channel = command.get('channel_id', None)
+    text = '\n'.join(links_from_text(text, channel))
     if text:
         data = dict(text=text, response_type='in_channel')
         WEBHOOK_CLIENT.post(response_url, json=data)
 
 
-def links_from_text(text):
+def links_from_text(text, channel):
     """Search for matches and post any to the original channel."""
+    now = time.time()
+    for key in doneThat:
+        if doneThat[key] < now:
+            del doneThat[key]
     for bot in LINKBOTS:
         for match in bot.match(text):
+            if channel:
+                key = channel + '_' + match
+                if key in doneThat:
+                    app.logger.info(f'already processed {key}')
+                    continue
+                doneThat[key] = now + DUPLICATION_DELAY
             app.logger.info(f'{match} match!')
             try:
                 yield bot.message(match)

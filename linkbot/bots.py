@@ -28,7 +28,7 @@ class LinkBot(object):
     def __init__(self, conf):
         self._conf = conf
         match = conf.get('MATCH', self.default_match)
-        self._regex = re.compile(r'(\A|\s)+(%s)' % match, flags=re.I)
+        self._regex = re.compile(r'\b%s\b' % match, flags=re.I)
         if 'QUIPS' in conf:
             self.QUIPS = conf.get('QUIPS')
         self._link = conf.get('LINK', '%s|%s')
@@ -87,6 +87,7 @@ class JiraLinkBot(LinkBot):
         return updated
 
     def message(self, link_label):
+        link_label = link_label.upper()
         msg = super(JiraLinkBot, self).message(link_label)
         issue = self.jira.issue(link_label)
         summary = issue.fields.summary
@@ -110,6 +111,7 @@ class ServiceNowBot(LinkBot):
             host=conf.get('HOST'), auth=conf.get('AUTH'))
 
     def message(self, link_label):
+        link_label = link_label.upper()
         record = self.client.get_number(link_label)
         link = self._strlink(link_label)
         lines = [self._quip(link)]
