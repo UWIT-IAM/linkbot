@@ -22,7 +22,7 @@ if not LINKBOTS:
     raise Exception('no linkbots defined')
 SLACK_CLIENT = slack.WebClient(app.config['SLACK_BOT_TOKEN'])
 WEBHOOK_CLIENT = RequestLogger()
-DUPLICATION_DELAY = app.config.get('DUPLICATION_DELAY', 2 * 60 * 60)
+DUPLICATION_DELAY = app.config.get('DUPLICATION_DELAY', 7.5 * 60)
 
 doneThat = {}
 
@@ -126,9 +126,9 @@ def process_command(command):
 def links_from_text(text, channel):
     """Search for matches and post any to the original channel."""
     now = time.time()
-    for key in doneThat:
-        if doneThat[key] < now:
-            del doneThat[key]
+    beenThere = [key for key in doneThat if doneThat[key] < now]
+    for key in beenThere:
+        del doneThat[key]
     for bot in LINKBOTS:
         for match in bot.match(text):
             if channel:
