@@ -28,7 +28,7 @@ class LinkBot(object):
     def __init__(self, conf):
         self._conf = conf
         match = conf.get('MATCH', self.default_match)
-        self._regex = re.compile(r'\b%s\b' % match, flags=re.I)
+        self._regex = re.compile(r'(\b)(%s)(\b)' % match, flags=re.I)
         if 'QUIPS' in conf:
             self.QUIPS = conf.get('QUIPS')
         self._link = conf.get('LINK', '%s|%s')
