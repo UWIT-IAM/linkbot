@@ -26,6 +26,7 @@ DUPLICATION_DELAY = app.config.get('DUPLICATION_DELAY', 2 * 60 * 60)
 
 doneThat = {}
 
+
 @app.route('/', methods=['GET', 'POST'])
 def handle_message():
     """A single endpoint handling both events and commands."""
